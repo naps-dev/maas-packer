@@ -1,0 +1,14 @@
+#cloud-config
+write_files:
+  - path: /etc/rancher/rke2/config.yaml
+    owner: root:root
+    permissions: 0600
+    defer: true
+    content: |
+      bind-address: "x.x.x.x"
+      write-kubeconfig-mode: 644
+      disable-cloud-controller: true
+      disable: 
+        - "rke2-ingress-nginx"
+runcmd:
+  - 'sudo bash -c "/opt/setup.sh server | tee /tmp/setup.log"'
