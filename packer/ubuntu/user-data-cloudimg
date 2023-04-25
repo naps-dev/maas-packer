@@ -1,0 +1,76 @@
+#cloud-config
+users:
+  - name: root
+    lock_passwd: false
+    hashed_passwd: "$6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/"
+    ssh_redirect_user: false
+  # change the following user to a user of your choice for password access to the system if needed
+  # - name: example_naps_user
+  #   groups: sudo
+  #   lock_passwd: false
+  #   hashed_passwd: '$6$Ef7zoCrHuodIQ4r2$gbV54qMmRjUwTOlp0J9VYWjzXZRaA7XNWWVbn0cVahk1nvFpVCcBE4qs0HwfCx22WmIZ8BE575zfsrR9UDKSL0'
+  #   ssh_redirect_user: false
+
+
+ssh_pwauth: True
+disable_root: false
+preserve_hostname: true
+write_files:
+  - path: /opt/setup.sh
+    permissions: 0770
+    content: |
+      #!/bin/bash
+      set -x
+      set -e
+
+      if [[ "$1" != "server" && "$1" != "agent" ]]; then
+        echo "Invalid argument. Usage: $0 [server|agent]"
+        exit 1
+      fi
+
+      echo "Running setup as $(whoami)"
+
+      # echo "Resize disks (all nodes)"
+      lvresize -rl +100%FREE /dev/vgroot/lvroot
+
+      echo "Install iptables (required for nginx ingress controller) (all nodes)"
+      apt install iptables
+
+      echo "Set up elastic limits (all nodes)"
+      sysctl -w vm.max_map_count=1524288
+      sysctl -w fs.file-max=1000000
+      ulimit -n 1000000
+      ulimit -u 8192
+      sysctl --load
+      swapoff -a
+      sysctl fs.inotify.max_user_instances=8192
+      sysctl -p
+
+      echo "Set up Longhorn dependencies (all nodes)"
+      apt install open-iscsi nfs-common -y
+      systemctl start iscsid
+
+      systemctl daemon-reload
+
+      if [ "$1" = "server" ]; then
+        echo "Running server setup"
+        systemctl enable --now rke2-server
+        systemctl start rke2-server.service
+      elif [ "$1" = "agent" ]; then
+        echo "Running agent setup"
+        systemctl enable --now rke2-agent
+        systemctl start rke2-agent.service
+      fi
+
+runcmd:
+  - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+  - systemctl restart ssh
+  - curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION="v1.26.3+rke2r1" sh -
+  - mkdir -p /etc/rancher/rke2
+bootcmd:
+  - mkdir /run/packer_backup
+  - mkdir /run/packer_backup/etc
+  - mkdir /run/packer_backup/etc/apt
+  - mkdir /run/packer_backup/etc/ssh
+  - cp --preserve /etc/apt/sources.list /run/packer_backup/etc/apt/
+  - cp --preserve /etc/ssh/sshd_config /run/packer_backup/etc/ssh/
