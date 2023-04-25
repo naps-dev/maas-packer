@@ -1,0 +1,11 @@
+seeds-cloudimg.iso
+seeds-flat.iso
+seeds-lvm.iso
+OVMF_VARS.fd
+custom-cloudimg.tar.gz
+custom-ubuntu.tar.gz
+custom-ubuntu-lvm.dd.gz
+packer_cache/
+output-cloudimg/
+output-flat/
+my-changes.sh
