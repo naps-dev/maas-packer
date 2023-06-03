@@ -11,11 +11,34 @@ users:
   #   hashed_passwd: '$6$Ef7zoCrHuodIQ4r2$gbV54qMmRjUwTOlp0J9VYWjzXZRaA7XNWWVbn0cVahk1nvFpVCcBE4qs0HwfCx22WmIZ8BE575zfsrR9UDKSL0'
   #   ssh_redirect_user: false
 
+system_info:
+  default_user:
+    # change if desired
+    name: ubuntu
+
+ssh_pwauth: true
+password: '$6$RC4gvO5EOk2jMOlt$LY9nJ3P9nh.1xrJAIhOYMORX7W1gX5j2D1XJxY8NmaQQHOjGib1CWtFoYTiFwdYnCIsKCuKMluLrVsU6puzp60'
+# mkpasswd -m sha-512 --stdin <<< "REDACTED"
 
 ssh_pwauth: True
 disable_root: false
 preserve_hostname: true
 write_files:
+  - path: /etc/sysctl.d/99-k8s.conf
+    permissions: 0644
+    content: |
+      vm.max_map_count=1524288
+      fs.file-max=1000000
+      fs.inotify.max_user_instances=8192
+  
+  - path: /etc/security/limits.d/99-k8s.conf
+    permissions: 0644
+    content: |
+      * hard nofile 1000000
+      * soft nofile 1000000
+      * hard nproc 8192
+      * soft nproc 8192
+
   - path: /opt/setup.sh
     permissions: 0770
     content: |
@@ -34,17 +57,7 @@ write_files:
       lvresize -rl +100%FREE /dev/vgroot/lvroot
 
       echo "Install iptables (required for nginx ingress controller) (all nodes)"
-      apt install iptables
-
-      echo "Set up elastic limits (all nodes)"
-      sysctl -w vm.max_map_count=1524288
-      sysctl -w fs.file-max=1000000
-      ulimit -n 1000000
-      ulimit -u 8192
-      sysctl --load
-      swapoff -a
-      sysctl fs.inotify.max_user_instances=8192
-      sysctl -p
+      apt install iptables -y
 
       echo "Set up Longhorn dependencies (all nodes)"
       apt install open-iscsi nfs-common -y
@@ -67,6 +80,10 @@ runcmd:
   - systemctl restart ssh
   - curl -sfL https://get.rke2.io | INSTALL_RKE2_VERSION="v1.26.3+rke2r1" sh -
   - mkdir -p /etc/rancher/rke2
+  - swapoff -a
+  - sed -e '/swap/ s/^#*/#/' -i /etc/fstab
+  - systemctl mask swap.target
+  - sysctl --load
 bootcmd:
   - mkdir /run/packer_backup
   - mkdir /run/packer_backup/etc
