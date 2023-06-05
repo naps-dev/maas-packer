@@ -8,17 +8,9 @@ users:
   # - name: example_naps_user
   #   groups: sudo
   #   lock_passwd: false
-  #   hashed_passwd: '$6$Ef7zoCrHuodIQ4r2$gbV54qMmRjUwTOlp0J9VYWjzXZRaA7XNWWVbn0cVahk1nvFpVCcBE4qs0HwfCx22WmIZ8BE575zfsrR9UDKSL0'
+  #   hashed_passwd: '$6$MUHLpqkVw07bh9zm$R6/oe/12Bq0kBmed.l9DUKFy/69I2/POprpE.lfl9lgWmUZ2o.f0.PgYt34IBguWHCkOAw1lKjb6L7zTsjFPZ0'
+  #   # mkpasswd -m sha-512 --stdin <<< "REDACTED"
   #   ssh_redirect_user: false
-
-system_info:
-  default_user:
-    # change if desired
-    name: ubuntu
-
-ssh_pwauth: true
-password: '$6$RC4gvO5EOk2jMOlt$LY9nJ3P9nh.1xrJAIhOYMORX7W1gX5j2D1XJxY8NmaQQHOjGib1CWtFoYTiFwdYnCIsKCuKMluLrVsU6puzp60'
-# mkpasswd -m sha-512 --stdin <<< "REDACTED"
 
 ssh_pwauth: True
 disable_root: false
