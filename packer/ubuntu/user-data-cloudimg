@@ -20,7 +20,6 @@ write_files:
     permissions: 0644
     content: |
       vm.max_map_count=1524288
-      fs.file-max=1000000
       fs.inotify.max_user_instances=8192
   
   - path: /etc/security/limits.d/99-k8s.conf
