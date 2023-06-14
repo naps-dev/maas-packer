@@ -12,6 +12,9 @@ lint:
 format:
 	packer fmt .
 
+seeds-flat.iso: user-data-flat meta-data
+	cloud-localds $@ $^
+
 OVMF_VARS.fd: /usr/share/OVMF/OVMF_VARS.fd
 	cp -v $< $@
 

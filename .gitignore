@@ -1,3 +1,6 @@
+.idea/
+.vscode/
+
 seeds-cloudimg.iso
 seeds-flat.iso
 seeds-lvm.iso
