@@ -60,6 +60,21 @@ write_files:
         echo "Running server setup"
         systemctl enable --now rke2-server
         systemctl start rke2-server.service
+        cat <<EOF > /var/lib/rancher/rke2/server/manifests/rke2-coredns-config.yaml
+        apiVersion: helm.cattle.io/v1
+        kind: HelmChartConfig
+        metadata:
+          name: rke2-coredns
+          namespace: kube-system
+        spec:
+          valuesContent: |-
+            tolerations:
+              - key: "cnaps.io/node-taint"
+                operator: "Equal"
+                value: "noncore"
+                effect: "NoSchedule"
+      EOF
+
       elif [ "$1" = "agent" ]; then
         echo "Running agent setup"
         systemctl enable --now rke2-agent
