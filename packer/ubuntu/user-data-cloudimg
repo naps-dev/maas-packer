@@ -73,6 +73,63 @@ write_files:
                 operator: "Equal"
                 value: "noncore"
                 effect: "NoSchedule"
+            servers:
+            - zones:
+              - zone: .
+              port: 53
+              plugins:
+              - name: errors
+              - name: health
+                configBlock: |-
+                  lameduck 5s
+              - name: ready
+              - name: kubernetes
+                parameters: cluster.local in-addr.arpa ip6.arpa
+                configBlock: |-
+                  pods insecure
+                  fallthrough in-addr.arpa ip6.arpa
+                  ttl 30
+              - name: prometheus
+                parameters: 0.0.0.0:9153
+              - name: forward
+                parameters: . /etc/resolv.conf
+              - name: cache
+                parameters: 30
+              - name: loop
+              - name: reload
+              - name: loadbalance
+              - name: rewrite
+                parameters: "name grafana.vp.bigbang.dev admin-ingressgateway.istio-system.svc.cluster.local"
+              - name: rewrite
+                parameters: "name prometheus.vp.bigbang.dev admin-ingressgateway.istio-system.svc.cluster.local"
+              - name: rewrite
+                parameters: "name alertmanager.vp.bigbang.dev admin-ingressgateway.istio-system.svc.cluster.local"
+              - name: rewrite
+                parameters: "name kibana.vp.bigbang.dev admin-ingressgateway.istio-system.svc.cluster.local"
+              - name: rewrite
+                parameters: "name neuvector.vp.bigbang.dev admin-ingressgateway.istio-system.svc.cluster.local"
+              - name: rewrite
+                parameters: "name tracing.vp.bigbang.dev admin-ingressgateway.istio-system.svc.cluster.local"
+              - name: rewrite
+                parameters: "name cdi.vp.bigbang.dev admin-ingressgateway.istio-system.svc.cluster.local"
+              - name: rewrite
+                parameters: "name keycloak.vp.bigbang.dev passthrough-ingressgateway.istio-system.svc.cluster.local"
+              - name: rewrite
+                parameters: "name dataplane-kibana.vp.bigbang.dev dataplane-ingressgateway.istio-system.svc.cluster.local"
+              - name: rewrite
+                parameters: "name arkime-viewer.vp.bigbang.dev dataplane-ingressgateway.istio-system.svc.cluster.local"
+              - name: rewrite
+                parameters: "name kasm.vp.bigbang.dev dataplane-ingressgateway.istio-system.svc.cluster.local"
+              - name: rewrite
+                parameters: "name mixmode-enterprise.vp.bigbang.dev dataplane-ingressgateway.istio-system.svc.cluster.local"
+              - name: rewrite
+                parameters: "name mockingbird.vp.bigbang.dev dataplane-ingressgateway.istio-system.svc.cluster.local"
+              - name: rewrite
+                parameters: "name mockingbird-api.vp.bigbang.dev dataplane-ingressgateway.istio-system.svc.cluster.local"
+              - name: rewrite
+                parameters: "name polarity.vp.bigbang.dev dataplane-ingressgateway.istio-system.svc.cluster.local"
+              - name: rewrite
+                parameters: "name xsoar.vp.bigbang.dev dataplane-ingressgateway.istio-system.svc.cluster.local"
       EOF
 
       elif [ "$1" = "agent" ]; then
